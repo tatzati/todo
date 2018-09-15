@@ -6,21 +6,29 @@ from django.db import models
 from django.conf import settings
 
 
+class TaskManger(models.Manager):
+    def get_queryset(self):
+        queryset = super(TaskManger, self).get_queryset()
+        return queryset.order_by('complete_time', 'due_date')
+
+
 class Task(models.Model):
     """
     Task
 
-    The most important object for this application.
+    The most important model for this application.
     Allows users to create and edit tasks that they
     need to complete. They can set names, descriptions,
     and due dates.
     """
+    objects = TaskManger()
+
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
 
-    title = models.CharField(max_length = 100, null = False)
-    description = models.TextField(blank = True)
-    due_date = models.DateField(blank = True, null = True)
-    complete_time = models.DateTimeField(blank = True, null = True)
+    title = models.CharField(max_length=100, null=False)
+    description = models.TextField(blank=True)
+    due_date = models.DateField(blank=True, null=True)
+    complete_time = models.DateTimeField(blank=True, null=True)
 
     @property
     def is_complete(self):
@@ -39,7 +47,7 @@ class Task(models.Model):
         :return: True if task is due within two days. Otherwise, False.
         """
         return bool(
-            self.complete_time < (timezone.now() - timezone.timedelta(days = 2)))
+            self.complete_time < (timezone.now() - timezone.timedelta(days=2)))
 
     def mark_complete(self):
         """
